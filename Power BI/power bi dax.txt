@@ -1,0 +1,68 @@
+#"Added Custom" = Table.AddColumn(#"Inserted End of Week", "FiscalBaseDate", each Date.AddMonths([Date],adjustedFiscalMonthBaseIndex)),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Added Custom",{{"FiscalBaseDate", type date}}),
+    #"Inserted Year1" = Table.AddColumn(#"Changed Type1", "Year.1", each Date.Year([FiscalBaseDate]), Int64.Type),
+    #"Renamed Columns1" = Table.RenameColumns(#"Inserted Year1",{{"Year.1", "Fiscal Year"}}),
+    #"Inserted Quarter1" = Table.AddColumn(#"Renamed Columns1", "Quarter.1", each Date.QuarterOfYear([FiscalBaseDate]), Int64.Type),
+    #"Renamed Columns2" = Table.RenameColumns(#"Inserted Quarter1",{{"Quarter.1", "Fiscal Quarter"}}),
+    #"Inserted Month1" = Table.AddColumn(#"Renamed Columns2", "Month.1", each Date.Month([FiscalBaseDate]), Int64.Type),
+    #"Renamed Columns3" = Table.RenameColumns(#"Inserted Month1",{{"Month.1", "Fiscal Month"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns3",{"FiscalBaseDate"}),
+    #"Inserted Age" = Table.AddColumn(#"Removed Columns", "Age", each [Date]-Today, type duration),
+    #"Extracted Days" = Table.TransformColumns(#"Inserted Age",{{"Age", Duration.Days, Int64.Type}}),
+    #"Renamed Columns4" = Table.RenameColumns(#"Extracted Days",{{"Age", "Day Offset"}}),
+    #"Added Custom1" = Table.AddColumn(#"Renamed Columns4", "Month Offset", each (([Year]-Date.Year(Today))*12)
++([Month]-Date.Month(Today))),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Added Custom1",{{"Month Offset", Int64.Type}}),
+    #"Added Custom2" = Table.AddColumn(#"Changed Type2", "Year Offset", each [Year]-Date.Year(Today)),
+    #"Changed Type3" = Table.TransformColumnTypes(#"Added Custom2",{{"Year Offset", Int64.Type}}),
+    #"Added Custom3" = Table.AddColumn(#"Changed Type3", "Quarter Offset", each (([Year]-Date.Year(Today))*4)
++([Quarter]-Date.QuarterOfYear(Today))),
+    #"Changed Type4" = Table.TransformColumnTypes(#"Added Custom3",{{"Quarter Offset", Int64.Type}}),
+    #"Added Custom4" = Table.AddColumn(#"Changed Type4", "Year-Month", each Date.ToText([Date],"MMM yyyy")),
+    #"Added Custom5" = Table.AddColumn(#"Added Custom4", "Year-Month Code", each Date.ToText([Date],"yyyyMM")),
+    #"Changed Type5" = Table.TransformColumnTypes(#"Added Custom5",{{"Year-Month", type text}, {"Year-Month Code", Int64.Type}})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let
+    Date = List.Dates(
+        #date(2016,1,1),
+        3650,
+        #duration(1,0,0,0)
+
+    ),
+    
+    
+    #"Converted to Table" = Table.FromList(Date, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    #"Changed Type" = Table.TransformColumnTypes(#"Converted to Table",{{"Column1",type date}}),
+    #"Renamed Column" = Table.RenameColumns(#"Changed Type",{{"Column1","Date"}}),
+    #"Duplicated Column" = Table.DuplicateColumn(#"Renamed Columns","Date",  "Date . Copy"),
+    #"Extracted Year" = Table.TransformColumns(#"Duplicated Column",{{"Date . Copy", Date.Year, Int64.Type}}),
+    #"Duplicated Column1" = Table.DuplicateColumn(#"Extracted Year","Date","Date . Copy.1"),
+    #"Duplicated Column2" = Table.DuplicateColumn(#"Duplicated Column1","Date","Date . Copy.2"),
+    #"Calculated Week of Year" = Table.TransformColumns(#"Duplicated Column2",{{"Date . Copy.1",Date.WeekOfYear,Int64.Type}}),
+    #"Extracted Day Name" = Table.TransformColumns(#"Calculated Week of Year",{{"Date . Copy2", each Date.DayOfWeekName(_),type text}}),
+    #"Renamed Columns1" = Table.RenameColumns(#"Extracted Day Name",{{"Date . Copy","Year"}, {"Date . Copy.1","week"}, {"Date . Copy2","Day"}})
+    
+in
+    #"Renamed Columns1"
+
+
